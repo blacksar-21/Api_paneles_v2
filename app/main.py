@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.database.database import get_db, engine
 
@@ -92,6 +93,21 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="API Optimización Energética de Paneles Solares"
+)
+
+app = FastAPI(
+    title="API Optimización Energética de Paneles Solares"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

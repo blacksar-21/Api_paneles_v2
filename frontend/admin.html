@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Api Paneles - Administrador</title>
+</head>
+
+<body>
+
+    <h1>Panel de Administrador</h1>
+
+    <p>Bienvenido al panel administrativo de Api Paneles.</p>
+    <h2>Instalaciones solares</h2>
+
+<div id="instalaciones">
+    <p>Cargando instalaciones...</p>
+</div>
+
+    <button id="logout-button">
+        Cerrar sesión
+    </button>
+
+    <script type="module">
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+        const SUPABASE_URL = "https://stscpsybcrcownfmcmym.supabase.co";
+
+        const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_3hQL55nVMwWaQBlocB_UNA_db91X-di";
+
+        const supabase = createClient(
+            SUPABASE_URL,
+            SUPABASE_PUBLISHABLE_KEY
+        );
+
+        const { data: { user } } = await supabase.auth.getUser();
+
+if (!user) {
+    window.location.href = "index.html";
+} else {
+
+    const { data: perfil, error: perfilError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+    if (perfilError || perfil.role !== "admin") {
+        window.location.href = "index.html";
+    }
+}
+
+        const logoutButton = document.getElementById("logout-button");
+
+        const instalacionesContainer = document.getElementById("instalaciones");
+
+async function cargarInstalaciones() {
+
+    try {
+
+        const response = await fetch(
+            "https://api-paneles-v2.onrender.com/instalaciones"
+        );
+
+        if (!response.ok) {
+            throw new Error("Error al consultar la API");
+        }
+
+        const instalaciones = await response.json();
+
+        console.log("Instalaciones:", instalaciones);
+
+        instalacionesContainer.innerHTML = "";
+
+        instalaciones.forEach((instalacion) => {
+
+            const elemento = document.createElement("p");
+
+            elemento.textContent =
+                `ID: ${instalacion.id_instalacion} - ${instalacion.nombre}`;
+
+            instalacionesContainer.appendChild(elemento);
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        instalacionesContainer.innerHTML =
+            "<p>No se pudieron cargar las instalaciones.</p>";
+    }
+}
+
+cargarInstalaciones();
+
+        logoutButton.addEventListener("click", async () => {
+
+            const { error } = await supabase.auth.signOut();
+
+            if (error) {
+                console.error("Error al cerrar sesión:", error);
+                return;
+            }
+
+            window.location.href = "index.html";
+        });
+    </script>
+
+</body>
+</html>
